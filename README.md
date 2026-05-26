@@ -13,3 +13,10 @@ Infrastructure Dockerisée inspirée du projet Inception.
 
 ```bash
 make up
+
+## phpMyAdmin
+
+Accessible via :
+
+```bash
+https://localhost/phpmyadmin/

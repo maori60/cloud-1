@@ -1,0 +1,76 @@
+services:
+  nginx:
+    container_name: cloud1_nginx
+    build: ./srcs/requirements/nginx
+    image: cloud1_nginx
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/wordpress
+    depends_on:
+      - wordpress
+      - phpmyadmin
+    networks:
+      - cloud1
+    restart: always
+    env_file:
+      - .env
+
+  wordpress:
+    container_name: cloud1_wordpress
+    build: ./srcs/requirements/wordpress
+    image: cloud1_wordpress
+    volumes:
+      - wordpress_data:/var/www/wordpress
+    env_file:
+      - .env
+    depends_on:
+      - mariadb
+    networks:
+      - cloud1
+    restart: always
+
+  mariadb:
+    container_name: cloud1_mariadb
+    build: ./srcs/requirements/mariadb
+    image: cloud1_mariadb
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    env_file:
+      - .env
+    networks:
+      - cloud1
+    restart: always
+
+  phpmyadmin:
+    container_name: cloud1_phpmyadmin
+    build: ./srcs/requirements/phpmyadmin
+    image: cloud1_phpmyadmin
+    env_file:
+      - .env
+    depends_on:
+      - mariadb
+    networks:
+      - cloud1
+    restart: always
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: ${DATA_DIR:-/home/${USER}/data}/mariadb
+    name: "cloud1_mariadb_data"
+
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: ${DATA_DIR:-/home/${USER}/data}/wordpress
+    name: "cloud1_wordpress_data"
+
+networks:
+  cloud1:
+    name: cloud1

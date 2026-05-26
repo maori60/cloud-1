@@ -1,0 +1,48 @@
+- name: Deploy Cloud-1 infrastructure
+  hosts: cloud
+  become: true
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - git
+          - docker.io
+          - docker-compose-plugin
+        state: present
+
+    - name: Enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Create deployment directory
+      file:
+        path: /opt/cloud-1
+        state: directory
+        mode: '0755'
+
+    - name: Copy application files
+      copy:
+        src: ../app/
+        dest: /opt/cloud-1/
+        mode: preserve
+
+    - name: Create persistent data directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /home/van/data/mariadb
+        - /home/van/data/wordpress
+
+    - name: Build and start Docker Compose stack
+      command: docker compose up -d --build
+      args:
+        chdir: /opt/cloud-1
